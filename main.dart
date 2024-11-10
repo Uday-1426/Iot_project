@@ -1,3 +1,5 @@
+//A basic app view for the division of grids(9x9)
+
 import 'package:flutter/material.dart';
 
 void main() {
