@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'DisplayPage.dart';  // Import the new page
 
 void main() {
   runApp(MyApp());
@@ -55,26 +56,30 @@ class GridScreen extends StatelessWidget {
                 int index = rowIndex * 9 + colIndex;
                 return Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.all(4.0),  // Adjust padding for better spacing
+                    padding: const EdgeInsets.all(4.0),
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.zero,  // Remove padding around the button
-                        minimumSize: Size(50, 50),  // Set a minimum size for buttons
-                        elevation: 2,  // Add a subtle elevation for button effect
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size(50, 50),
+                        elevation: 2,
                       ),
                       onPressed: () {
                         sendGridSelection(gridLabels[index]);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Selected ${gridLabels[index]}')),
+                        // Navigate to DisplayPage and pass the selected grid label
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DisplayPage(gridLabel: gridLabels[index]),
+                          ),
                         );
                       },
-                      child: Center(  // Center the text inside the button
+                      child: Center(
                         child: Text(
                           gridLabels[index],
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black,  // Black text color
+                            color: Colors.black,
                           ),
                         ),
                       ),
