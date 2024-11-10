@@ -46,7 +46,8 @@ class GridScreen extends StatelessWidget {
         title: Text('D153 Room Grid'),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: List.generate(9, (rowIndex) {
             return Row(
@@ -54,18 +55,27 @@ class GridScreen extends StatelessWidget {
                 int index = rowIndex * 9 + colIndex;
                 return Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.all(4.0),
+                    padding: const EdgeInsets.all(4.0),  // Adjust padding for better spacing
                     child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.zero,  // Remove padding around the button
+                        minimumSize: Size(50, 50),  // Set a minimum size for buttons
+                        elevation: 2,  // Add a subtle elevation for button effect
+                      ),
                       onPressed: () {
                         sendGridSelection(gridLabels[index]);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Selected ${gridLabels[index]}')),
                         );
                       },
-                      child: Center(
+                      child: Center(  // Center the text inside the button
                         child: Text(
                           gridLabels[index],
-                          style: TextStyle(fontSize: 16, color: Colors.black),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,  // Black text color
+                          ),
                         ),
                       ),
                     ),
