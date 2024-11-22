@@ -1,36 +1,125 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
-class DisplayPage extends StatelessWidget {
-  final String gridLabel;  // The selected grid label passed from GridScreen
+class DisplayPage extends StatefulWidget {
+  final String gridLabel;
 
   DisplayPage({required this.gridLabel});
+
+  @override
+  _DisplayPageState createState() => _DisplayPageState();
+}
+
+class _DisplayPageState extends State<DisplayPage> {
+  Map<String, dynamic> sensorData = {};
+  late Timer timer;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchSensorData();
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      fetchSensorData();
+    });
+  }
+
+  Future<void> fetchSensorData() async {
+    try {
+      final response = await http.get(Uri.parse('http://192.168.210.52/sensor'));
+      if (response.statusCode == 200) {
+        setState(() {
+          sensorData = json.decode(response.body);
+        });
+      } else {
+        print('Failed to fetch sensor data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Selected Grid'),
+        title: Text('Grid: ${widget.gridLabel}'),
         centerTitle: true,
+        backgroundColor: Colors.blue[900],
       ),
-      body: Center(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue[900]!, Colors.blue[300]!],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: sensorData.isEmpty
+              ? Center(child: CircularProgressIndicator())
+              : ListView(
+            children: [
+              buildInfoCard('Selected Grid', [widget.gridLabel]),
+              buildInfoCard('Acceleration (m/s²)', [
+                'X: ${sensorData['acceleration_x']}',
+                'Y: ${sensorData['acceleration_y']}',
+                'Z: ${sensorData['acceleration_z']}',
+              ]),
+              buildInfoCard('Gyroscope (°/s)', [
+                'X: ${sensorData['gyro_x']}',
+                'Y: ${sensorData['gyro_y']}',
+                'Z: ${sensorData['gyro_z']}',
+              ]),
+              buildInfoCard('Temperature (°C)', ['${sensorData['temperature']}']),
+              buildInfoCard('Distance (cm)', ['${sensorData['distance']}']),
+              buildInfoCard('Speed (RPM)', [
+                'Left: ${sensorData['left_speed']}',
+                'Right: ${sensorData['right_speed']}',
+              ]),
+              buildInfoCard('Rotations', [
+                'Left: ${sensorData['left_rotations']}',
+                'Right: ${sensorData['right_rotations']}',
+              ]),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildInfoCard(String title, List<String> values) {
+    return Card(
+      elevation: 8,
+      margin: EdgeInsets.symmetric(vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'You selected: $gridLabel',
+              title,
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: Colors.blue[900],
               ),
             ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // Navigate back to GridScreen
-                Navigator.pop(context);
-              },
-              child: Text('Back to Grid'),
+            SizedBox(height: 8),
+            ...values.map(
+                  (value) => Text(
+                value,
+                style: TextStyle(fontSize: 16),
+              ),
             ),
           ],
         ),
